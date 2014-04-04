@@ -7,6 +7,10 @@ Herein you will find the service / daemon portion of the project. We utilize the
 
 http://commons.apache.org/proper/commons-daemon/
 
+Apache Daemon binaries for Windows
+
+http://www.apache.org/dist/commons/daemon/binaries/windows/
+
 
 General
 -------------
