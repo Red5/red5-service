@@ -51,8 +51,10 @@
 	</developers>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<slf4j.version>1.7.5</slf4j.version>
+		<logback.version>1.0.13</logback.version>
 		<commons-daemon.version>1.0.15</commons-daemon.version>
-		<red5-server.version>1.0.2-M2</red5-server.version>
+		<red5-server.version>1.0.2-M1</red5-server.version>
 	</properties>
 	<scm>
 		<connection>scm:git:https://github.com/Red5/red5-service.git</connection>
@@ -186,6 +188,12 @@
 				</executions>
 			</plugin>
 			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<version>2.3.7</version>
+				<extensions>true</extensions>
+			</plugin>
+			<plugin>
 				<artifactId>maven-scm-plugin</artifactId>
 				<version>1.8.1</version>
 				<configuration>
@@ -232,6 +240,16 @@
 	</repositories>
 	<dependencies>
 		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>${slf4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-core</artifactId>
+			<version>${logback.version}</version>
+		</dependency>		
+		<dependency>
 			<groupId>commons-daemon</groupId>
 			<artifactId>commons-daemon</artifactId>
 			<version>1.0.15</version>
@@ -240,7 +258,6 @@
 			<groupId>org.red5</groupId>
 			<artifactId>red5-server</artifactId>
 			<version>${red5-server.version}</version>
-			<type>jar</type>
             <scope>compile</scope> 
 		</dependency>
 	</dependencies>

@@ -1,10 +1,40 @@
+/*
+ * RED5 Open Source Flash Server - http://code.google.com/p/red5/
+ * 
+ * Copyright 2006-2014 by respective authors (see below). All rights reserved.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.red5.daemon;
+
+import java.util.Scanner;
+
+import org.apache.commons.daemon.Daemon;
+import org.apache.commons.daemon.DaemonContext;
+import org.red5.server.net.rtmp.RTMPMinaIoHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Launch the Engine from a variety of sources, either through a main() or invoked through
  * Apache Daemon.
  */
 public class EngineLauncher implements Daemon {
-    private static final Log4J log = Log4J.getLog();
-    private static Engine engine = null;
+	
+	private static Logger log = LoggerFactory.getLogger(RTMPMinaIoHandler.class);
+
+	private static Engine engine = null;
 
     private static EngineLauncher engineLauncherInstance = new EngineLauncher();
 
