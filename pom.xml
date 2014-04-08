@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>red5-service</artifactId>
 	<packaging>jar</packaging>
@@ -54,7 +55,6 @@
 		<slf4j.version>1.7.5</slf4j.version>
 		<logback.version>1.0.13</logback.version>
 		<commons-daemon.version>1.0.15</commons-daemon.version>
-		<red5-server.version>1.0.2-M1</red5-server.version>
 	</properties>
 	<scm>
 		<connection>scm:git:https://github.com/Red5/red5-service.git</connection>
@@ -248,17 +248,11 @@
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-core</artifactId>
 			<version>${logback.version}</version>
-		</dependency>		
+		</dependency>
 		<dependency>
 			<groupId>commons-daemon</groupId>
 			<artifactId>commons-daemon</artifactId>
 			<version>1.0.15</version>
-		</dependency>
-		<dependency>
-			<groupId>org.red5</groupId>
-			<artifactId>red5-server</artifactId>
-			<version>${red5-server.version}</version>
-            <scope>compile</scope> 
 		</dependency>
 	</dependencies>
 </project>

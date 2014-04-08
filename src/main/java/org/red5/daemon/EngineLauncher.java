@@ -19,64 +19,64 @@
 package org.red5.daemon;
 
 import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.daemon.Daemon;
 import org.apache.commons.daemon.DaemonContext;
-import org.red5.server.net.rtmp.RTMPMinaIoHandler;
+import org.red5.server.Bootstrap;
+import org.red5.server.Shutdown;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Launch the Engine from a variety of sources, either through a main() or invoked through
- * Apache Daemon.
+ * Launch the Engine from a variety of sources, either through a main() or invoked through Apache Daemon.
  */
 public class EngineLauncher implements Daemon {
 	
-	private static Logger log = LoggerFactory.getLogger(RTMPMinaIoHandler.class);
-
-	private static Engine engine = null;
+	private static Logger log = LoggerFactory.getLogger(EngineLauncher.class);
 
     private static EngineLauncher engineLauncherInstance = new EngineLauncher();
-
+    
+    private static AtomicBoolean stopped = new AtomicBoolean(false);
+    
+    private static String[] commandLineArgs;
+    
     /**
      * The Java entry point.
-     * @param args Command line arguments, all ignored.
+     * 
+     * @param args Command line arguments
      */
     public static void main(String[] args) {
+    	// store the args
+    	commandLineArgs = args;
         // the main routine is only here so I can also run the app from the command line
         engineLauncherInstance.initialize();
-
         Scanner sc = new Scanner(System.in);
         // wait until receive stop command from keyboard
         System.out.printf("Enter 'stop' to halt: ");
         while(!sc.nextLine().toLowerCase().equals("stop"));
-
-        if (!engine.isStopped()) {
+        if (!stopped.get()) {
             engineLauncherInstance.terminate();
         }
-
+        sc.close();
     }
 
     /**
-     * Static methods called by prunsrv to start/stop
-     * the Windows service.  Pass the argument "start"
-     * to start the service, and pass "stop" to
-     * stop the service.
+     * Static methods called by prunsrv to start/stop the Windows service.  Pass the argument "start"
+     * to start the service, and pass "stop" to stop the service.
      *
      * Taken lock, stock and barrel from Christopher Pierce's blog at http://blog.platinumsolutions.com/node/234
      *
      * @param args Arguments from prunsrv command line
-     **/
+     */
     public static void windowsService(String args[]) {
         String cmd = "start";
         if (args.length > 0) {
             cmd = args[0];
         }
-
         if ("start".equals(cmd)) {
             engineLauncherInstance.windowsStart();
-        }
-        else {
+        } else {
             engineLauncherInstance.windowsStop();
         }
     }
@@ -84,13 +84,13 @@ public class EngineLauncher implements Daemon {
     public void windowsStart() {
         log.debug("windowsStart called");
         initialize();
-        while (!engine.isStopped()) {
+        while (!stopped.get()) {
             // don't return until stopped
             synchronized(this) {
                 try {
                     this.wait(60000);  // wait 1 minute and check if stopped
+                } catch(InterruptedException ie) {
                 }
-                catch(InterruptedException ie){}
             }
         }
     }
@@ -108,7 +108,7 @@ public class EngineLauncher implements Daemon {
     @Override
     public void init(DaemonContext arg0) throws Exception {
         log.debug("Daemon init");
-        }
+    }
 
     @Override
     public void start() {
@@ -131,9 +131,14 @@ public class EngineLauncher implements Daemon {
      * Do the work of starting the engine
      */
     private void initialize() {
-        if (engine == null) {
-            log.info("Starting the Engine");
- ... spawn threads etc
+        if (!stopped.get()) {
+            log.info("Starting Red5");
+            // start
+            try {
+				Bootstrap.main(commandLineArgs);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
         }
     }
 
@@ -141,10 +146,13 @@ public class EngineLauncher implements Daemon {
      * Cleanly stop the engine.
      */
     public void terminate() {
-        if (engine != null) {
-            log.info("Stopping the Engine");
-            engine.stop();
-            log.info("Engine stopped");
+        if (!stopped.get()) {
+            log.info("Stopping Red5");
+            // set flag
+            stopped.set(true);
+            // shutdown
+            Shutdown.main(commandLineArgs);
+            log.info("Red5 stopped");
         }
     }
 }
