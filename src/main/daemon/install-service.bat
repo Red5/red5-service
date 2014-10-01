@@ -25,7 +25,8 @@ if NOT DEFINED RED5_HOME set RED5_HOME=%~dp0
 
 set "EXECUTABLE=%RED5_HOME%\prunsrv.exe"
 set SERVICE_NAME=Red5
-set CLASSPATH="%RED5_HOME%\red5-service.jar;%RED5_HOME%\conf"
+set "CLASSPATH=%RED5_HOME%\red5-service.jar;%RED5_HOME%\conf"
+set "WORKING_PATH=%RED5_HOME%\"
 
 rem Make sure prerequisite environment variables are set
 if not "%JAVA_HOME%" == "" goto gotJdkHome
@@ -66,17 +67,17 @@ echo Installing '%SERVICE_NAME%' service
     --Description "Red5 Media Server" ^
     --DisplayName "Red5 Media Server" ^
     --Install "%EXECUTABLE%" ^
-    --LogPath "%RED5_HOME%\logs" ^
+    --LogPath "%RED5_HOME%\log" ^
     --StdOutput "%RED5_HOME%\log\red5_service.log" ^
     --StdError "%RED5_HOME%\log\stderr.log" ^
     --Classpath "%CLASSPATH%" ^
     --Jvm "%JVM%" ^
     --StartMode jvm ^
-    --StartPath "%RED5_HOME%" ^
+    --StartPath "%WORKING_PATH%" ^
     --StartClass org.red5.server.Bootstrap ^
     --StartMethod main ^
     --StopMode jvm ^
-    --StopPath "%RED5_HOME%" ^
+    --StopPath "%WORKING_PATH%" ^
     --StopClass org.red5.server.Shutdown ^
     --StopMethod main ^
     --StopParams 9999;red5user;changeme ^
