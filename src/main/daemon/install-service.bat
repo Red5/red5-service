@@ -67,7 +67,7 @@ echo Installing '%SERVICE_NAME%' service
     --Description "Red5 Media Server" ^
     --DisplayName "Red5 Media Server" ^
     --Install "%EXECUTABLE%" ^
-    --LogPath "%RED5_HOME%\logs" ^
+    --LogPath "%RED5_HOME%\log" ^
     --StdOutput "%RED5_HOME%\log\red5_service.log" ^
     --StdError "%RED5_HOME%\log\stderr.log" ^
     --Classpath "%CLASSPATH%" ^
