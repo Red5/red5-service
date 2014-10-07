@@ -23,7 +23,13 @@ SETLOCAL
 
 if NOT DEFINED RED5_HOME set RED5_HOME=%~dp0
 
-set "EXECUTABLE=%RED5_HOME%\prunsrv.exe"
+echo Processor Architecture: "%PROCESSOR_ARCHITECTURE%"
+if "%PROCESSOR_ARCHITECTURE%" == "AMD64" (
+    set "EXECUTABLE=%RED5_HOME%\amd64\prunsrv.exe"
+) else (
+    set "EXECUTABLE=%RED5_HOME%\prunsrv.exe"
+)
+echo Using Daemon:           "%EXECUTABLE%"
 set SERVICE_NAME=Red5
 set "CLASSPATH=%RED5_HOME%\red5-service.jar;%RED5_HOME%\conf"
 set "WORKING_PATH=%RED5_HOME%\"
