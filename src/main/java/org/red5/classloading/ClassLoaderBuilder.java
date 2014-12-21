@@ -161,6 +161,19 @@ public final class ClassLoaderBuilder {
 				libPath = home + "/lib";
 			}
 			//System.out.printf("Library path: %s\n", libPath);	
+			
+			try {
+				// add red5-server-common jar to the classpath
+				File red5commonjar = new File(home, "red5-server-common.jar");
+				if (!red5commonjar.exists()) {
+					System.out.println("Red5 server common jar was not found");
+				} else {
+					System.out.println("Red5 server common jar was found");
+					urlList.add(red5commonjar.toURI().toURL());
+				}
+			} catch (MalformedURLException e1) {
+				e1.printStackTrace();
+			}
 
 			//grab the urls for all the jars in "lib"
 			File libDir = new File(libPath);
@@ -445,6 +458,10 @@ public final class ClassLoaderBuilder {
 				//do the version check
 
 				//read from end to get version info
+				//System.out.printf("Read from end to get version info: %s top 1st dash: %d top 2nd dash: %d\n", checkName, topFirstDash, topSecondDash);
+				if (checkName.length() < (topFirstDash + 1)) {
+					continue;
+				}
 				String checkVers = checkName.substring(topSecondDash != -1 ? (topSecondDash + 1) : (topFirstDash + 1));
 				if (checkVers.startsWith("-")) {
 					continue;
