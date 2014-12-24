@@ -18,6 +18,7 @@
 
 package org.red5.daemon;
 
+import java.util.Arrays;
 import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -25,15 +26,13 @@ import org.apache.commons.daemon.Daemon;
 import org.apache.commons.daemon.DaemonContext;
 import org.red5.server.Bootstrap;
 import org.red5.server.Shutdown;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Launch the Engine from a variety of sources, either through a main() or invoked through Apache Daemon.
  */
 public class EngineLauncher implements Daemon {
 	
-	private static Logger log = LoggerFactory.getLogger(EngineLauncher.class);
+	//private static Logger log = LoggerFactory.getLogger(EngineLauncher.class);
 
     private static EngineLauncher engineLauncherInstance = new EngineLauncher();
     
@@ -82,7 +81,7 @@ public class EngineLauncher implements Daemon {
     }
 
     public void windowsStart() {
-        log.debug("windowsStart called");
+    	System.out.println("windowsStart called");
         initialize();
         while (!stopped.get()) {
             // don't return until stopped
@@ -96,7 +95,7 @@ public class EngineLauncher implements Daemon {
     }
 
     public void windowsStop() {
-        log.debug("windowsStop called");
+    	System.out.println("windowsStop called");
         terminate();
         synchronized(this) {
             // stop the start loop
@@ -106,25 +105,25 @@ public class EngineLauncher implements Daemon {
 
     // Implementing the Daemon interface is not required for Windows but is for Linux
     @Override
-    public void init(DaemonContext arg0) throws Exception {
-        log.debug("Daemon init");
+    public void init(DaemonContext ctx) throws Exception {
+    	System.out.println("Daemon init");
     }
 
     @Override
     public void start() {
-        log.debug("Daemon start");
+    	System.out.println("Daemon start");
         initialize();
     }
 
     @Override
     public void stop() {
-        log.debug("Daemon stop");
+    	System.out.println("Daemon stop");
         terminate();
     }
 
     @Override
     public void destroy() {
-        log.debug("Daemon destroy");
+    	System.out.println("Daemon destroy");
     }
 
     /**
@@ -132,7 +131,7 @@ public class EngineLauncher implements Daemon {
      */
     private void initialize() {
         if (!stopped.get()) {
-            log.info("Starting Red5");
+        	System.out.printf("Starting Red5 with args: %s\n", Arrays.toString(commandLineArgs));
             // start
             try {
 				Bootstrap.main(commandLineArgs);
@@ -147,12 +146,12 @@ public class EngineLauncher implements Daemon {
      */
     public void terminate() {
         if (!stopped.get()) {
-            log.info("Stopping Red5");
+        	System.out.printf("Stopping Red5 with args: %s\n", Arrays.toString(commandLineArgs));
             // set flag
             stopped.set(true);
             // shutdown
             Shutdown.main(commandLineArgs);
-            log.info("Red5 stopped");
+            System.out.println("Red5 stopped");
         }
     }
 }

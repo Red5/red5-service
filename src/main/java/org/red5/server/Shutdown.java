@@ -18,9 +18,6 @@
 
 package org.red5.server;
 
-import java.io.EOFException;
-import java.lang.reflect.UndeclaredThrowableException;
-import java.rmi.UnmarshalException;
 import java.util.HashMap;
 
 import javax.management.JMX;
@@ -30,6 +27,7 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
+import org.red5.classloading.ClassLoaderBuilder;
 import org.red5.server.jmx.mxbeans.ShutdownMXBean;
 
 /**
@@ -56,7 +54,10 @@ public class Shutdown {
 			String policyFile = System.getProperty("java.security.policy");
 			if (policyFile == null) {
 				System.setProperty("java.security.debug", "failure");
-				System.setProperty("java.security.policy", "conf/red5.policy");
+				// get the configuration root
+				String configRoot = Bootstrap.getConfigurationRoot(Bootstrap.getRed5Root());
+				System.out.printf("Configuation root: %s\n", configRoot);
+				System.setProperty("java.security.policy", configRoot + "/red5.policy");
 			}
 			/*
 			try {
@@ -70,8 +71,20 @@ public class Shutdown {
 			// check for the host name as a system prop
 			String rmiAdapterHost = System.getProperty("java.rmi.server.hostname");
 			if (rmiAdapterHost == null) {
-				rmiAdapterHost = "localhost";
+				String ipv4 = System.getProperty("java.net.preferIPv4Stack");
+				if ("true".equals(ipv4)) {
+					rmiAdapterHost = "127.0.0.1";
+				} else {
+					rmiAdapterHost = "[::]";
+				}
 			}
+			// add jars to the classloader 
+			ClassLoader baseLoader = Thread.currentThread().getContextClassLoader();
+			// build a ClassLoader
+			ClassLoader loader = ClassLoaderBuilder.build(null, ClassLoaderBuilder.USE_RED5_LIB, baseLoader);
+			// set new loader as the loader for this thread
+			Thread.currentThread().setContextClassLoader(loader);	
+			// proceed with jmx
 			JMXServiceURL url = null;
 			JMXConnector jmxc = null;
 			HashMap<String, Object> env = null;
@@ -116,13 +129,13 @@ public class Shutdown {
 				proxy.destroy();
 			}
 			jmxc.close();
-		} catch (UndeclaredThrowableException e) {
-			// ignore
-		} catch (NullPointerException e) {
-			// ignore
-		} catch (UnmarshalException e) {
-			// ignore
-		} catch (EOFException e) {
+//		} catch (UndeclaredThrowableException e) {
+//			// ignore
+//		} catch (NullPointerException e) {
+//			// ignore
+//		} catch (UnmarshalException e) {
+//			// ignore
+//		} catch (EOFException e) {
 			// ignore
 		} catch (Exception e) {
 			e.printStackTrace();

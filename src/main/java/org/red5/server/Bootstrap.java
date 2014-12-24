@@ -78,7 +78,7 @@ public class Bootstrap {
 		String policyFile = System.getProperty("java.security.policy");
 		if (policyFile == null) {
 			System.setProperty("java.security.debug", "all");
-			System.setProperty("java.security.policy", "conf/red5.policy");
+			System.setProperty("java.security.policy", String.format("%s/red5.policy", System.getProperty("red5.config_root")));
 		}
 		//set the temp directory if we're vista or later
 		String os = System.getProperty("os.name").toLowerCase();
@@ -131,7 +131,7 @@ public class Bootstrap {
 	 * @param root
 	 * @return
 	 */
-	private static String getConfigurationRoot(String root) {
+	static String getConfigurationRoot(String root) {
 		// look for config dir
 		String conf = System.getProperty("red5.config_root");
 		// if root is not null and conf is null then default it
@@ -154,7 +154,7 @@ public class Bootstrap {
 	 * @return
 	 * @throws IOException
 	 */
-	private static String getRed5Root() throws IOException {
+	static String getRed5Root() throws IOException {
 		// look for red5 root first as a system property
 		String root = System.getProperty("red5.root");
 		// if root is null check environmental

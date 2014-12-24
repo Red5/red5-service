@@ -162,18 +162,18 @@ public final class ClassLoaderBuilder {
 			}
 			//System.out.printf("Library path: %s\n", libPath);	
 			
-			try {
-				// add red5-server-common jar to the classpath
-				File red5commonjar = new File(home, "red5-server-common.jar");
-				if (!red5commonjar.exists()) {
-					System.out.println("Red5 server common jar was not found");
-				} else {
-					System.out.println("Red5 server common jar was found");
-					urlList.add(red5commonjar.toURI().toURL());
-				}
-			} catch (MalformedURLException e1) {
-				e1.printStackTrace();
-			}
+//			try {
+//				// add red5-server-common jar to the classpath
+//				File red5commonjar = new File(home, "red5-server-common.jar");
+//				if (!red5commonjar.exists()) {
+//					System.out.println("Red5 server common jar was not found");
+//				} else {
+//					System.out.println("Red5 server common jar was found");
+//					urlList.add(red5commonjar.toURI().toURL());
+//				}
+//			} catch (MalformedURLException e1) {
+//				e1.printStackTrace();
+//			}
 
 			//grab the urls for all the jars in "lib"
 			File libDir = new File(libPath);
@@ -264,14 +264,17 @@ public final class ClassLoaderBuilder {
 			}
 
 		} else {
+
 			List<String> standardLibs = new ArrayList<String>(7);
 
-			try {
-				urlList.add(path.toURI().toURL());
-				URL classesURL = new URL("jar:file:" + path.getAbsolutePath().replace(File.separatorChar, '/') + "!/WEB-INF/classes/");
-				urlList.add(classesURL);
-			} catch (MalformedURLException e1) {
-				e1.printStackTrace();
+			if (path != null) {
+				try {
+					urlList.add(path.toURI().toURL());
+					URL classesURL = new URL("jar:file:" + path.getAbsolutePath().replace(File.separatorChar, '/') + "!/WEB-INF/classes/");
+					urlList.add(classesURL);
+				} catch (MalformedURLException e1) {
+					e1.printStackTrace();
+				}
 			}
 
 			if (mode == USE_CLASSPATH_LIB) {
