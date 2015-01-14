@@ -19,6 +19,8 @@
 package org.red5.server;
 
 import java.util.HashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import javax.management.JMX;
 import javax.management.MBeanServerConnection;
@@ -103,7 +105,7 @@ public class Shutdown {
 			jmxc = JMXConnectorFactory.connect(url, env);
 			MBeanServerConnection mbs = jmxc.getMBeanServerConnection();
 			// class supporting shutdown
-			ShutdownMXBean proxy = null;
+			final ShutdownMXBean proxy;
 			// check for loader registration
 			ObjectName tomcatObjectName = new ObjectName("org.red5.server:type=TomcatLoader");
 			ObjectName jettyObjectName = new ObjectName("org.red5.server:type=JettyLoader");
@@ -123,10 +125,31 @@ public class Shutdown {
 				proxy = JMX.newMXBeanProxy(mbs, contextLoaderObjectName, ShutdownMXBean.class, true);
 			} else {
 				System.out.println("Red5 Loader was not found, is the server running?");
+				proxy = null;
 			}
 			if (proxy != null) {
-				System.out.println("Calling shutdown");
-				proxy.destroy();
+				System.out.println("Calling shutdown with 5 second timeout");
+				final CountDownLatch latch = new CountDownLatch(1);
+				new Thread(new Runnable() {
+					public void run() {
+						// stop red5 via the proxy
+						try {
+							proxy.destroy();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+						// count down
+						latch.countDown();
+					}
+				}, "Red5Stopper").start();				
+				// wait for latch item to complete
+				try {
+					latch.await(5, TimeUnit.SECONDS);
+				} catch (InterruptedException e) {
+					System.out.println("Countdown latch interrupted");
+				} finally {
+					System.exit(0);
+				}
 			}
 			jmxc.close();
 //		} catch (UndeclaredThrowableException e) {
