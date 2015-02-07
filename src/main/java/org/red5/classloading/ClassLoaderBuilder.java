@@ -39,7 +39,7 @@ import java.util.regex.Pattern;
  * Class used to get the Servlet Class loader. The class loader returned is a
  * child first class loader. 
  * 
- * <br />
+ * <br>
  * <i>This class is based on original code from the XINS project, by 
  * Anthony Goubard (anthony.goubard@japplis.com)</i>
  * 
@@ -102,9 +102,9 @@ public final class ClassLoaderBuilder {
 	 * @param path the directory or file containing classes
 	 * 
 	 * @param mode the mode in which the servlet should be loaded. The possible
-	 *            values are <code>USE_CURRENT_CLASSPATH</code>,
-	 *            <code>USE_CLASSPATH_LIB</code>, <code>USE_XINS_LIB</code>,
-	 *            <code>USE_WAR_LIB</code>.
+	 *            values are <pre>USE_CURRENT_CLASSPATH</pre>,
+	 *            <pre>USE_CLASSPATH_LIB</pre>, <pre>USE_XINS_LIB</pre>,
+	 *            <pre>USE_WAR_LIB</pre>.
 	 * 
 	 * @param parent the parent class loader or null if you want the current threads
 	 * 			class loader

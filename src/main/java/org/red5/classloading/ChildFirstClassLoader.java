@@ -74,13 +74,13 @@ public final class ChildFirstClassLoader extends URLClassLoader {
 	 * The implementation is surprisingly straightforward.
 	 * 
 	 * @param name
-	 *            the name of the class to load, should not be <code>null</code>
+	 *            the name of the class to load, should not be <pre>null</pre>
 	 *            .
 	 * 
 	 * @param resolve
 	 *            flag that indicates whether the class should be resolved.
 	 * 
-	 * @return the loaded class, never <code>null</code>.
+	 * @return the loaded class, never <pre>null</pre>.
 	 * 
 	 * @throws ClassNotFoundException
 	 *             if the class could not be loaded.
@@ -144,9 +144,9 @@ public final class ChildFirstClassLoader extends URLClassLoader {
 	 * java.lang.Classloader with child-first behavior.
 	 * 
 	 * @param name the name of the resource to load, should not be
-	 *            <code>null</code>.
+	 *            <pre>null</pre>.
 	 * 
-	 * @return a {@link URL} for the resource, or <code>null</code> if it could
+	 * @return a {@link URL} for the resource, or <pre>null</pre> if it could
 	 *         not be found.
 	 */
 	@Override
