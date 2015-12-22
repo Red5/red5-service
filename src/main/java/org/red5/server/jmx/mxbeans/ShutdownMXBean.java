@@ -27,5 +27,5 @@ import javax.management.MXBean;
 public interface ShutdownMXBean {
 
 	public void destroy() throws Exception;
-	
+
 }
