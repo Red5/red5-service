@@ -1,7 +1,7 @@
 /*
  * RED5 Open Source Flash Server - https://github.com/Red5/
  * 
- * Copyright 2006-2015 by respective authors (see below). All rights reserved.
+ * Copyright 2006-2016 by respective authors (see below). All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,148 +40,128 @@ import org.red5.server.jmx.mxbeans.ShutdownMXBean;
  */
 public class Shutdown {
 
-	/**
-	 * Connects to the given RMI port (default: 9999) and invokes shutdown on
-	 * the loader.
-	 * <ul>
-	 * <li>Arg 0 = port number</li>
-	 * <li>Arg 1 = auth name</li>
-	 * <li>Arg 2 = auth password</li>
-	 * </ul>
-	 * 
-	 * @param args
-	 *            see args list
-	 */
-	@SuppressWarnings("cast")
-	public static void main(String[] args) {
-		try {
-			String policyFile = System.getProperty("java.security.policy");
-			if (policyFile == null) {
-				System.setProperty("java.security.debug", "failure");
-				// get the configuration root
-				String configRoot = Bootstrap.getConfigurationRoot(Bootstrap
-						.getRed5Root());
-				System.out.printf("Configuation root: %s\n", configRoot);
-				System.setProperty("java.security.policy", configRoot
-						+ "/red5.policy");
-			}
-			/*
-			 * try { // Enable the security manager SecurityManager sm = new
-			 * SecurityManager(); System.setSecurityManager(sm); } catch
-			 * (SecurityException se) {
-			 * System.err.println("Security manager already set"); }
-			 */
-			// check for the host name as a system prop
-			String rmiAdapterHost = System
-					.getProperty("java.rmi.server.hostname");
-			if (rmiAdapterHost == null) {
-				String ipv4 = System.getProperty("java.net.preferIPv4Stack");
-				if ("true".equals(ipv4)) {
-					rmiAdapterHost = "127.0.0.1";
-				} else {
-					rmiAdapterHost = "[::]";
-				}
-			}
-			// add jars to the classloader
-			ClassLoader baseLoader = Thread.currentThread()
-					.getContextClassLoader();
-			// build a ClassLoader
-			ClassLoader loader = ClassLoaderBuilder.build(null,
-					ClassLoaderBuilder.USE_RED5_LIB, baseLoader);
-			// set new loader as the loader for this thread
-			Thread.currentThread().setContextClassLoader(loader);
-			// proceed with jmx
-			JMXServiceURL url = null;
-			JMXConnector jmxc = null;
-			HashMap<String, Object> env = null;
-			if (null == args || args.length < 1) {
-				System.out.printf("Attempting to connect to RMI %s:9999\n",
-						rmiAdapterHost);
-				url = new JMXServiceURL("service:jmx:rmi://" + rmiAdapterHost
-						+ ":9999/jndi/rmi://" + rmiAdapterHost + ":9999/red5");
-			} else {
-				System.out.printf("Attempting to connect to RMI %s:%s\n",
-						rmiAdapterHost, args[0]);
-				url = new JMXServiceURL("service:jmx:rmi://" + rmiAdapterHost
-						+ ":" + args[0] + "/jndi/rmi://" + rmiAdapterHost + ":"
-						+ args[0] + "/red5");
-				if (args.length > 1) {
-					env = new HashMap<String, Object>(1);
-					String[] credentials = new String[] { args[1], args[2] };
-					env.put("jmx.remote.credentials", credentials);
-				}
-			}
-			jmxc = JMXConnectorFactory.connect(url, env);
-			MBeanServerConnection mbs = jmxc.getMBeanServerConnection();
-			// class supporting shutdown
-			final ShutdownMXBean proxy;
-			// check for loader registration
-			ObjectName tomcatObjectName = new ObjectName(
-					"org.red5.server:type=TomcatLoader");
-			ObjectName jettyObjectName = new ObjectName(
-					"org.red5.server:type=JettyLoader");
-			ObjectName winstoneObjectName = new ObjectName(
-					"org.red5.server:type=WinstoneLoader");
-			ObjectName contextLoaderObjectName = new ObjectName(
-					"org.red5.server:type=ContextLoader");
-			if (mbs.isRegistered(jettyObjectName)) {
-				System.out.println("Red5 Jetty loader was found");
-				proxy = JMX.newMXBeanProxy(mbs, jettyObjectName,
-						ShutdownMXBean.class, true);
-			} else if (mbs.isRegistered(tomcatObjectName)) {
-				System.out.println("Red5 Tomcat loader was found");
-				proxy = JMX.newMXBeanProxy(mbs, tomcatObjectName,
-						ShutdownMXBean.class, true);
-			} else if (mbs.isRegistered(winstoneObjectName)) {
-				System.out.println("Red5 Winstone loader was found");
-				proxy = JMX.newMXBeanProxy(mbs, winstoneObjectName,
-						ShutdownMXBean.class, true);
-			} else if (mbs.isRegistered(contextLoaderObjectName)) {
-				System.out.println("Red5 Context loader was found");
-				proxy = JMX.newMXBeanProxy(mbs, contextLoaderObjectName,
-						ShutdownMXBean.class, true);
-			} else {
-				System.out
-						.println("Red5 Loader was not found, is the server running?");
-				proxy = null;
-			}
-			if (proxy != null) {
-				System.out.println("Calling shutdown with 5 second timeout");
-				final CountDownLatch latch = new CountDownLatch(1);
-				new Thread(new Runnable() {
-					public void run() {
-						// stop red5 via the proxy
-						try {
-							proxy.destroy();
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-						// count down
-						latch.countDown();
-					}
-				}, "Red5Stopper").start();
-				// wait for latch item to complete
-				try {
-					latch.await(5, TimeUnit.SECONDS);
-				} catch (InterruptedException e) {
-					System.out.println("Countdown latch interrupted");
-				} finally {
-					System.exit(0);
-				}
-			}
-			jmxc.close();
-			// } catch (UndeclaredThrowableException e) {
-			// // ignore
-			// } catch (NullPointerException e) {
-			// // ignore
-			// } catch (UnmarshalException e) {
-			// // ignore
-			// } catch (EOFException e) {
-			// ignore
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+    /**
+     * Connects to the given RMI port (default: 9999) and invokes shutdown on the loader.
+     * <ul>
+     * <li>Arg 0 = port number</li>
+     * <li>Arg 1 = auth name</li>
+     * <li>Arg 2 = auth password</li>
+     * </ul>
+     * 
+     * @param args
+     *            see args list
+     */
+    @SuppressWarnings("cast")
+    public static void main(String[] args) {
+        try {
+            String policyFile = System.getProperty("java.security.policy");
+            if (policyFile == null) {
+                System.setProperty("java.security.debug", "failure");
+                // get the configuration root
+                String configRoot = Bootstrap.getConfigurationRoot(Bootstrap.getRed5Root());
+                System.out.printf("Configuation root: %s\n", configRoot);
+                System.setProperty("java.security.policy", configRoot + "/red5.policy");
+            }
+            /*
+             * try { // Enable the security manager SecurityManager sm = new
+             * SecurityManager(); System.setSecurityManager(sm); } catch
+             * (SecurityException se) {
+             * System.err.println("Security manager already set"); }
+             */
+            // check for the host name as a system prop
+            String rmiAdapterHost = System.getProperty("java.rmi.server.hostname");
+            if (rmiAdapterHost == null) {
+                String ipv4 = System.getProperty("java.net.preferIPv4Stack");
+                if ("true".equals(ipv4)) {
+                    rmiAdapterHost = "127.0.0.1";
+                } else {
+                    rmiAdapterHost = "[::]";
+                }
+            }
+            // add jars to the classloader
+            ClassLoader baseLoader = Thread.currentThread().getContextClassLoader();
+            // build a ClassLoader
+            ClassLoader loader = ClassLoaderBuilder.build(null, ClassLoaderBuilder.USE_RED5_LIB, baseLoader);
+            // set new loader as the loader for this thread
+            Thread.currentThread().setContextClassLoader(loader);
+            // proceed with jmx
+            JMXServiceURL url = null;
+            JMXConnector jmxc = null;
+            HashMap<String, Object> env = null;
+            if (null == args || args.length < 1) {
+                System.out.printf("Attempting to connect to RMI %s:9999\n", rmiAdapterHost);
+                url = new JMXServiceURL("service:jmx:rmi://" + rmiAdapterHost + ":9999/jndi/rmi://" + rmiAdapterHost + ":9999/red5");
+            } else {
+                System.out.printf("Attempting to connect to RMI %s:%s\n", rmiAdapterHost, args[0]);
+                url = new JMXServiceURL("service:jmx:rmi://" + rmiAdapterHost + ":" + args[0] + "/jndi/rmi://" + rmiAdapterHost + ":" + args[0] + "/red5");
+                if (args.length > 1) {
+                    env = new HashMap<String, Object>(1);
+                    String[] credentials = new String[] { args[1], args[2] };
+                    env.put("jmx.remote.credentials", credentials);
+                }
+            }
+            jmxc = JMXConnectorFactory.connect(url, env);
+            MBeanServerConnection mbs = jmxc.getMBeanServerConnection();
+            // class supporting shutdown
+            final ShutdownMXBean proxy;
+            // check for loader registration
+            ObjectName tomcatObjectName = new ObjectName("org.red5.server:type=TomcatLoader");
+            ObjectName jettyObjectName = new ObjectName("org.red5.server:type=JettyLoader");
+            ObjectName winstoneObjectName = new ObjectName("org.red5.server:type=WinstoneLoader");
+            ObjectName contextLoaderObjectName = new ObjectName("org.red5.server:type=ContextLoader");
+            if (mbs.isRegistered(jettyObjectName)) {
+                System.out.println("Red5 Jetty loader was found");
+                proxy = JMX.newMXBeanProxy(mbs, jettyObjectName, ShutdownMXBean.class, true);
+            } else if (mbs.isRegistered(tomcatObjectName)) {
+                System.out.println("Red5 Tomcat loader was found");
+                proxy = JMX.newMXBeanProxy(mbs, tomcatObjectName, ShutdownMXBean.class, true);
+            } else if (mbs.isRegistered(winstoneObjectName)) {
+                System.out.println("Red5 Winstone loader was found");
+                proxy = JMX.newMXBeanProxy(mbs, winstoneObjectName, ShutdownMXBean.class, true);
+            } else if (mbs.isRegistered(contextLoaderObjectName)) {
+                System.out.println("Red5 Context loader was found");
+                proxy = JMX.newMXBeanProxy(mbs, contextLoaderObjectName, ShutdownMXBean.class, true);
+            } else {
+                System.out.println("Red5 Loader was not found, is the server running?");
+                proxy = null;
+            }
+            if (proxy != null) {
+                System.out.println("Calling shutdown with 5 second timeout");
+                final CountDownLatch latch = new CountDownLatch(1);
+                new Thread(new Runnable() {
+                    public void run() {
+                        // stop red5 via the proxy
+                        try {
+                            proxy.destroy();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        // count down
+                        latch.countDown();
+                    }
+                }, "Red5Stopper").start();
+                // wait for latch item to complete
+                try {
+                    latch.await(5, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    System.out.println("Countdown latch interrupted");
+                } finally {
+                    System.exit(0);
+                }
+            }
+            jmxc.close();
+            // } catch (UndeclaredThrowableException e) {
+            // // ignore
+            // } catch (NullPointerException e) {
+            // // ignore
+            // } catch (UnmarshalException e) {
+            // // ignore
+            // } catch (EOFException e) {
+            // ignore
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-	}
+    }
 
 }
