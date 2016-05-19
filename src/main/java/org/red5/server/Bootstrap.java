@@ -1,5 +1,5 @@
 /*
- * RED5 Open Source Flash Server - https://github.com/Red5/
+ * RED5 Open Source Media Server - https://github.com/Red5/
  * 
  * Copyright 2006-2016 by respective authors (see below). All rights reserved.
  * 
@@ -50,7 +50,7 @@ public class Bootstrap {
             bootStrap();
             System.out.println("Bootstrap complete");
         } catch (Throwable t) {
-            System.out.printf("Bootstrap exception: %s\n", t.getMessage());
+            System.out.printf("Bootstrap exception: %s%n", t.getMessage());
             t.printStackTrace();
         } finally {
             System.out.println("Bootstrap exit");
@@ -102,7 +102,7 @@ public class Bootstrap {
                 dir += "\\AppData\\localLow";
             }
             System.setProperty("java.io.tmpdir", dir);
-            System.out.printf("Setting temp directory to %s\n", System.getProperty("java.io.tmpdir"));
+            System.out.printf("Setting temp directory to %s%n", System.getProperty("java.io.tmpdir"));
         }
         /*
          * try { // Enable the security manager SecurityManager sm = new
@@ -143,7 +143,7 @@ public class Bootstrap {
         }
         // set conf sysprop
         System.setProperty("red5.config_root", conf);
-        System.out.printf("Configuation root: %s\n", conf);
+        System.out.printf("Configuation root: %s%n", conf);
         return conf;
     }
 
@@ -164,7 +164,7 @@ public class Bootstrap {
         // if root is null find out current directory and use it as root
         if (root == null || ".".equals(root)) {
             root = System.getProperty("user.dir");
-            // System.out.printf("Current directory: %s\n", root);
+            // System.out.printf("Current directory: %s%n", root);
         }
         // if were on a windows based os flip the slashes
         if (File.separatorChar != '/') {
@@ -176,7 +176,7 @@ public class Bootstrap {
         }
         // set/reset property
         System.setProperty("red5.root", root);
-        System.out.printf("Red5 root: %s\n", root);
+        System.out.printf("Red5 root: %s%n", root);
         return root;
     }
 

@@ -31,7 +31,7 @@ if "%PROCESSOR_ARCHITECTURE%" == "AMD64" (
 )
 echo Using Daemon:           "%EXECUTABLE%"
 set SERVICE_NAME=Red5
-set "CLASSPATH=%RED5_HOME%\red5-service.jar;%RED5_HOME%\conf"
+set "CLASSPATH=%RED5_HOME%\commons-daemon-1.0.15.jar;%RED5_HOME%\red5-service.jar;%RED5_HOME%\conf"
 set "WORKING_PATH=%RED5_HOME%\"
 
 rem Make sure prerequisite environment variables are set
@@ -74,20 +74,21 @@ echo Installing '%SERVICE_NAME%' service
     --DisplayName "Red5 Media Server" ^
     --Install "%EXECUTABLE%" ^
     --LogPath "%RED5_HOME%\log" ^
-    --StdOutput "%RED5_HOME%\log\red5_service.log" ^
-    --StdError "%RED5_HOME%\log\stderr.log" ^
+    --StdOutput "%RED5_HOME%\log\red5-service.log" ^
+    --StdError "%RED5_HOME%\log\red5-error.log" ^
     --Classpath "%CLASSPATH%" ^
     --Jvm "%JVM%" ^
     --StartMode jvm ^
     --StartPath "%WORKING_PATH%" ^
-    --StartClass org.red5.server.Bootstrap ^
-    --StartMethod main ^
+    --StartClass org.red5.daemon.EngineLauncher ^
+    --StartMethod windowsService ^
+    --StartParams start ^
     --StopMode jvm ^
     --StopPath "%WORKING_PATH%" ^
-    --StopClass org.red5.server.Shutdown ^
-    --StopMethod main ^
-    --StopParams 9999;red5user;changeme ^
-    --JvmOptions "-Djavax.net.ssl.keyStore=%RED5_HOME%/conf/keystore.jmx;-Djavax.net.ssl.keyStorePassword=password;-Xverify:none;-XX:+TieredCompilation;-XX:+UseBiasedLocking;-XX:+UseStringCache;-XX:+UseParNewGC;-XX:InitialCodeCacheSize=8m;-XX:ReservedCodeCacheSize=32m;-Dorg.terracotta.quartz.skipUpdateCheck=true;-Dlogback.ContextSelector=org.red5.logging.LoggingContextSelector;-Dcatalina.useNaming=true;-Djava.security.debug=failure;-Djava.security.manager;-Djava.security.policy=%RED5_HOME%/conf/red5.policy;-Dpython.home=lib" ^
+    --StopClass org.red5.daemon.EngineLauncher ^
+    --StopMethod windowsService ^
+    --StopParams 9999 ^
+    --JvmOptions "-Xverify:none;-XX:+TieredCompilation;-XX:+UseBiasedLocking;-XX:+UseStringCache;-XX:+UseParNewGC;-XX:InitialCodeCacheSize=8m;-XX:ReservedCodeCacheSize=32m;-Dorg.terracotta.quartz.skipUpdateCheck=true;-Dlogback.ContextSelector=org.red5.logging.LoggingContextSelector;-Dcatalina.home=%RED5_HOME%;-Dcatalina.useNaming=true;-Djava.security.debug=failure;" ^
     --JvmMs 256 ^
     --JvmMx 768
 if not errorlevel 1 goto installed

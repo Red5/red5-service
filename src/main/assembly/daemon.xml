@@ -48,7 +48,7 @@
             <outputDirectory>/</outputDirectory>
             <fileMode>0755</fileMode>
             <includes>
-                <include>*.sh</include>
+                <include>red5</include>
             </includes>
             <filtered>true</filtered>
         </fileSet>
