@@ -19,9 +19,12 @@
 package org.red5.server;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.RandomAccessFile;
 import java.net.Socket;
+import java.nio.file.Paths;
 
 /**
  * Provides a means to cleanly shutdown an instance from the command line.
@@ -49,9 +52,27 @@ public class Shutdown {
                 BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             ) {
             // send the token
-            out.println(args[1]);
+            String token = "cafebeef";
+            if (args.length > 1) {
+                token = args[1];
+            } else {
+                // read the token from the file
+                try {
+                    File tokenFile = Paths.get("shutdown.token").toFile();
+                    RandomAccessFile raf = new RandomAccessFile(tokenFile, "r");
+                    byte[] buf = new byte[36];
+                    raf.readFully(buf);
+                    token = new String(buf);
+                    System.out.printf("Token loaded: %s%n", token);
+                    raf.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            out.println(token);
         } catch (Exception e) {
             System.err.printf("Exception connecting to %s%n", host);
+            e.printStackTrace();
             System.exit(1);
         }
     }
