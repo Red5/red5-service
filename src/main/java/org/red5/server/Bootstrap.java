@@ -73,10 +73,10 @@ public class Bootstrap {
         System.setProperty("red5.deployment.type", "bootstrap");
         System.setProperty("sun.lang.ClassLoader.allowArraySyntax", "true");
         // check system property before forcing out selector
-        if (System.getProperty("logback.ContextSelector") == null) {
+        //if (System.getProperty("logback.ContextSelector") == null) {
             // set to use our logger
-            System.setProperty("logback.ContextSelector", "org.red5.logging.LoggingContextSelector");
-        }
+            //System.setProperty("logback.ContextSelector", "org.red5.logging.LoggingContextSelector");
+        //}
         String policyFile = System.getProperty("java.security.policy");
         if (policyFile == null) {
             System.setProperty("java.security.debug", "all");
