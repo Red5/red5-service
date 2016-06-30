@@ -2,12 +2,15 @@
 #  /etc/init.d/red5
 
 ### BEGIN INIT INFO
-# Provides:          red5
-# Required-Start:    $remote_fs $syslog
+# Provides:          Red5
+# Required-Start:    $remote_fs $syslog $network
 # Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
 # Short-Description: Starts the red5 service
-# Description:       This file is used to start the daemon
-#                    and should be placed in /etc/init.d
+# Description:       This file is used to start the daemon and should be placed in /etc/init.d
+# chkconfig: 2345 85 85
+# processname: red5
 ### END INIT INFO
 
 # Author:   Sheldon Neilson <sheldon[AT]neilson.co.za>
