@@ -47,10 +47,11 @@ Windows daemon uses __procrun__.
 
 **Install**
 
-1. Set the __RED5_HOME__ environmental variable
-2. Edit the variables in the `install-service.bat` script to match your server
+1. Set the __RED5_HOME__ environmental variable (see below _Managing Windows Environment Variables_ for more detail)
+2. Edit the variables in the `install-service.bat` script to match your server, if you have special requirements
 3. Download the [windows binaries](http://www.apache.org/dist/commons/daemon/binaries/windows/)
-4. Unzip the Apache Daemon archive into your red5 directory
+ * The most current daemon archive (_since 2013_) to use is named: `commons-daemon-1.0.15-bin-windows.zip` 
+4. Unzip the daemon archive into your red5 directory
 5. Ensure `procrun.exe` is in your red5 home directory alongside `red5-service.jar`
 6. Execute `install-service.bat` to install the service
 7. Open the windows services panel `services.msc`
@@ -61,3 +62,24 @@ Windows daemon uses __procrun__.
 **Uninstall**
 
 1. To uninstall the service execute `uninstall-service.bat`
+
+**Managing Windows Environment Variables**
+
+The __RED5_HOME__ variable is used by Red5 and the service daemon; it is used to locate the Red5 installation. The variable must point to the Red5 install location, which may be `C:\Program Files\Red5` or something similar depending on how you installed it.
+
+*System Variables*
+
+You must be an administrator to modify a system environment variable. System environment variables are defined by Windows and apply to all computer users. Changes to the system environment are written to the registry, and usually require a restart to become effective.
+
+*User Variables for User Name*
+
+Any user can add, modify, or remove a user environment variable. These variables are established by Windows Setup, by some programs, and by users. The changes are written to the registry, and are usually effective immediately. However, after a change to user environment variables is made, any open software programs should be restarted to force them to read the new registry values. The common reason to add variables is to provide data that is required for variables that you want to use in scripts.
+
+To view or change environment variables:
+ * Right-click My Computer, and then click Properties.
+ * Click the Advanced tab.
+ * Click Environment variables.
+ * Click one the following options, for either a user or a system variable:
+  * Click New to add a new variable name and value.
+  * Click an existing variable, and then click Edit to change its name or value.
+
