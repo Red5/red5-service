@@ -43,21 +43,35 @@ systemctl enable red5.service
  * CentOs `systemctl stop red5.service`
  
 ### Windows
-Windows daemon uses __procrun__.
+Windows daemon uses __procrun__ (whose executable is named prunsrv.exe).
 
 **Install**
 
 1. Set the __RED5_HOME__ environmental variable (see below _Managing Windows Environment Variables_ for more detail)
-2. Edit the variables in the `install-service.bat` script to match your server, if you have special requirements
+2. Edit the variables in the `install-service.bat` script to match your server, ONLY if you have special requirements
 3. Download the [windows binaries](http://www.apache.org/dist/commons/daemon/binaries/windows/)
  * The most current daemon archive (_since 2013_) to use is named: `commons-daemon-1.0.15-bin-windows.zip` 
 4. Unzip the daemon archive into your red5 directory
-5. Ensure `procrun.exe` is in your red5 home directory alongside `red5-service.jar`
-6. Execute `install-service.bat` to install the service
+5. Ensure `prunsrv.exe` is in your red5 home directory alongside `red5-service.jar`
+6. Execute `install-service.bat` to install the service (See Install Errors below for resolutions, if you encounter an error)
 7. Open the windows services panel `services.msc`
-8. Scroll down to Red5
+8. Scroll down to `Red5 Media Server`
 9. Start the service by clicking the start button in the UI
 10. Stop the service by clicking the stop button in the UI
+
+**Install Errors**
+If you have a JRE installed and have pointed __JAVA_HOME__ at its location, you will see this error:
+```
+C:\red5>install-service.bat
+Processor Architecture: "AMD64"
+Using Daemon:           "C:\red5\\amd64\prunsrv.exe"
+The JAVA_HOME environment variable is not defined correctly
+This environment variable is needed to run this program
+NB: JAVA_HOME should point to a JDK not a JRE
+```
+To resolve this, remove the __JAVA_HOME__ variable and create one for __JRE_HOME__. Now go back to step 6 and try again.
+
+
 
 **Uninstall**
 
@@ -76,9 +90,10 @@ You must be an administrator to modify a system environment variable. System env
 Any user can add, modify, or remove a user environment variable. These variables are established by Windows Setup, by some programs, and by users. The changes are written to the registry, and are usually effective immediately. However, after a change to user environment variables is made, any open software programs should be restarted to force them to read the new registry values. The common reason to add variables is to provide data that is required for variables that you want to use in scripts.
 
 To view or change environment variables:
- * Right-click My Computer, and then click Properties.
- * Click the Advanced tab.
- * Click Environment variables.
+ * Right-click `My Computer`, and then click `Properties`.
+  * If no `My Computer` exists (Windows 10), Right-click windows logo (Start button) and select `System` 
+ * Click the `Advanced` tab or `Advanced system settings` option
+ * Click `Environment variables`.
  * Click one the following options, for either a user or a system variable:
   * Click New to add a new variable name and value.
   * Click an existing variable, and then click Edit to change its name or value.
