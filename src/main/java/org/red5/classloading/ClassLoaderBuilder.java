@@ -19,14 +19,20 @@
 package org.red5.classloading;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -62,27 +68,10 @@ public final class ClassLoaderBuilder {
     public static final int USE_RED5_LIB = 2;
 
     /**
-     * Load the servlet code and the libraries from the WAR file. This may take some time as the libraries need to be extracted from the WAR file.
+     * Load the servlet code and the libraries from the WAR file. This may take some time as the libraries need to be extracted from the WAR
+     * file.
      */
     public static final int USE_WAR_LIB = 3;
-
-    /**
-     * Filters jar files
-     */
-    public final static class JarFileFilter implements FilenameFilter {
-        /**
-         * Check whether file matches filter rules
-         * 
-         * @param dir
-         *            Directory
-         * @param name
-         *            File name
-         * @return true If file does match filter rules, false otherwise
-         */
-        public boolean accept(File dir, String name) {
-            return name.endsWith(".jar");
-        }
-    }
 
     /**
      * Default build uses Red5 common lib without a parent classloader.
@@ -98,140 +87,98 @@ public final class ClassLoaderBuilder {
      * 
      * @param path
      *            the directory or file containing classes
-     * 
      * @param mode
      *            the mode in which the servlet should be loaded. The possible values are
      * 
      *            <pre>
-     * USE_CURRENT_CLASSPATH
+     * USE_CURRENT_CLASSPATH, USE_CLASSPATH_LIB, USE_WAR_LIB
      * </pre>
-     * 
-     *            ,
-     * 
-     *            <pre>
-     * USE_CLASSPATH_LIB
-     * </pre>
-     * 
-     *            ,
-     * 
-     *            <pre>
-     * USE_XINS_LIB
-     * </pre>
-     * 
-     *            ,
-     * 
-     *            <pre>
-     * USE_WAR_LIB
-     * </pre>
-     * 
-     *            .
-     * 
      * @param parent
      *            the parent class loader or null if you want the current threads class loader
-     * 
-     * @return the Class loader to use to load the required class(es).
-     * 
+     * @return the Class loader to use to load the required class(es)
      */
-    @SuppressWarnings("unused")
-    public static ClassLoader build(File path, int mode, ClassLoader parent) {
-        JarFileFilter jarFileFilter = new JarFileFilter();
-        List<URL> urlList = new ArrayList<URL>(31);
+    public static ClassLoader build(Path path, int mode, ClassLoader parent) {
+        final Set<URL> urlList = new HashSet<>();
         // the class loader to return
         ClassLoader loader = null;
         // urls to load resources / classes from
         URL[] urls = null;
-
         if (mode == USE_RED5_LIB) {
             // get red5 home
             // look for red5 home as a system property
-            String home = System.getProperty("red5.root");
+            Path homeDir = null;
+            String home = System.getProperty("red5.root", System.getenv("RED5_HOME"));
             // if home is null check environmental
-            if (home == null) {
-                // check for env variable
-                home = System.getenv("RED5_HOME");
-            }
-            // if home is null or equal to "current" directory
-            if (home == null || ".".equals(home)) {
-                // if home is still null look it up via this classes loader
+            if (home != null) {
+                homeDir = Paths.get(home);
+            } else {
+                // if home is null or equal to "current" directory, look it up via this classes loader
                 String classLocation = ClassLoaderBuilder.class.getProtectionDomain().getCodeSource().getLocation().toString();
-                // System.out.printf("Classloader location: %s\n",
-                // classLocation);
+                // System.out.printf("Classloader location: %s\n", classLocation);
                 // snip off anything beyond the last slash
                 home = classLocation.substring(0, classLocation.lastIndexOf('/'));
+                homeDir = Paths.get(home);
             }
-
             try {
                 // add red5.jar to the classpath
-                File red5jar = new File(home, "red5-server.jar");
-                if (!red5jar.exists()) {
-                    System.out.println("Red5 server jar was not found, using fallback.");
-                    red5jar = new File(home, "red5.jar");
+                Path red5jar = homeDir.resolve("red5-server.jar");
+                if (!Files.exists(red5jar)) {
+                    System.out.println("Red5 server jar was not found, using fallback");
+                    red5jar = homeDir.resolve("red5.jar");
                 } else {
                     System.out.println("Red5 server jar was found");
                 }
-                urlList.add(red5jar.toURI().toURL());
+                urlList.add(red5jar.toUri().toURL());
             } catch (MalformedURLException e1) {
                 e1.printStackTrace();
             }
             System.out.printf("URL list: %s\n", urlList);
-
             // get red5 lib system property, if not found build it
-            String libPath = System.getProperty("red5.lib_root");
-            if (libPath == null) {
-                // construct the lib path
-                libPath = home + "/lib";
+            Path libDir = null;
+            String lib = System.getProperty("red5.lib_root");
+            if (lib != null) {
+                libDir = Paths.get(lib);
+            } else {
+                libDir = homeDir.resolve("lib");
             }
-            // System.out.printf("Library path: %s\n", libPath);
-
-            // try {
-            // // add red5-server-common jar to the classpath
-            // File red5commonjar = new File(home, "red5-server-common.jar");
-            // if (!red5commonjar.exists()) {
-            // System.out.println("Red5 server common jar was not found");
-            // } else {
-            // System.out.println("Red5 server common jar was found");
-            // urlList.add(red5commonjar.toURI().toURL());
-            // }
-            // } catch (MalformedURLException e1) {
-            // e1.printStackTrace();
-            // }
-
-            // grab the urls for all the jars in "lib"
-            File libDir = new File(libPath);
-            // if we are on osx with spaces in our path this may occur
-            if (libDir == null) {
-                libDir = new File(home, "lib");
+            try {
+                // add lib dir
+                //urlList.add(libDir.toUri().toURL());
+                // get all the lib jars
+                Files.walkFileTree(libDir, new SimpleFileVisitor<Path>() {
+                    @Override
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                        //System.out.printf("Lib file: %s%n", file.toAbsolutePath());
+                        if (file.toFile().getName().endsWith(".jar")) {
+                            try {
+                                urlList.add(file.toUri().toURL());
+                            } catch (MalformedURLException e) {
+                                System.err.printf("Exception %s\n", e);
+                            }
+                        }
+                        return FileVisitResult.CONTINUE;
+                    }
+                });
+            } catch (Exception e) {
+                System.err.printf("Exception %s\n", e);
             }
-            File[] libFiles = libDir.listFiles(jarFileFilter);
-            for (File lib : libFiles) {
-                try {
-                    urlList.add(lib.toURI().toURL());
-                } catch (MalformedURLException e) {
-                    System.err.printf("Exception %s\n", e);
-                }
-            }
-
             // look over the libraries and remove the old versions
             scrubURLList(urlList);
-
             // get config dir
+            Path confDir = null;
             String conf = System.getProperty("red5.config_root");
-            if (conf == null) {
-                conf = home + "/conf";
+            if (conf != null) {
+                confDir = Paths.get(conf);
+            } else {
+                confDir = homeDir.resolve("conf");
             }
             // add config dir
             try {
-                URL confUrl = new File(conf).toURI().toURL();
-                if (!urlList.contains(confUrl)) {
-                    urlList.add(confUrl);
-                }
+                urlList.add(confDir.toUri().toURL());
             } catch (MalformedURLException e) {
                 System.err.printf("Exception %s\n", e);
             }
-
-            // add the plugins
-
-            // get red5 lib system property, if not found build it
+            // get red5 plugins system property, if not found build it
             String pluginsPath = System.getProperty("red5.plugins_root");
             if (pluginsPath == null) {
                 // construct the plugins path
@@ -239,37 +186,28 @@ public final class ClassLoaderBuilder {
                 // update the property
                 System.setProperty("red5.plugins_root", pluginsPath);
             }
-            // create the directory if it doesnt exist
-            File pluginsDir = new File(pluginsPath);
-            // if we are on osx with spaces in our path this may occur
-            if (pluginsDir == null) {
-                pluginsDir = new File(home, "plugins");
-                // create the dir
-                pluginsDir.mkdirs();
-            }
-            // add the plugin directory to the path so that configs
-            // will be resolved and not have to be copied to conf
             try {
-                URL pluginsUrl = pluginsDir.toURI().toURL();
-                if (!urlList.contains(pluginsUrl)) {
-                    urlList.add(pluginsUrl);
-                }
-            } catch (MalformedURLException e) {
+                // create the directory if it doesnt exist
+                Path pluginsDir = Files.createDirectories(Paths.get(pluginsPath));
+                // add the plugin directory to the path so that configs will be resolved and not have to be copied to conf
+                urlList.add(pluginsDir.toUri().toURL());
+                // get all the plugin jars
+                Files.walkFileTree(pluginsDir, new SimpleFileVisitor<Path>() {
+                    @Override
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                        if (file.toFile().getName().endsWith(".jar")) {
+                            try {
+                                urlList.add(file.toUri().toURL());
+                            } catch (MalformedURLException e) {
+                                System.err.printf("Exception %s\n", e);
+                            }
+                        }
+                        return FileVisitResult.CONTINUE;
+                    }
+                });
+            } catch (Exception e) {
                 System.err.printf("Exception %s\n", e);
             }
-            // get all the plugin jars
-            File[] pluginsFiles = pluginsDir.listFiles(jarFileFilter);
-            // this can be null if the dir doesnt exist
-            if (pluginsFiles != null) {
-                for (File plugin : pluginsFiles) {
-                    try {
-                        urlList.add(plugin.toURI().toURL());
-                    } catch (MalformedURLException e) {
-                        System.err.printf("Exception %s\n", e);
-                    }
-                }
-            }
-
             // create the url array that the classloader wants
             urls = urlList.toArray(new URL[0]);
             System.out.printf("Selected libraries: (%s items)\n", urls.length);
@@ -283,21 +221,17 @@ public final class ClassLoaderBuilder {
             } else {
                 loader = new URLClassLoader(urls, parent);
             }
-
         } else {
-
             List<String> standardLibs = new ArrayList<String>(7);
-
             if (path != null) {
                 try {
-                    urlList.add(path.toURI().toURL());
-                    URL classesURL = new URL("jar:file:" + path.getAbsolutePath().replace(File.separatorChar, '/') + "!/WEB-INF/classes/");
+                    urlList.add(path.toUri().toURL());
+                    URL classesURL = new URL("jar:file:" + path.toFile().getAbsolutePath().replace(File.separatorChar, '/') + "!/WEB-INF/classes/");
                     urlList.add(classesURL);
                 } catch (MalformedURLException e1) {
                     e1.printStackTrace();
                 }
             }
-
             if (mode == USE_CLASSPATH_LIB) {
                 String classPath = System.getProperty("java.class.path");
                 StringTokenizer stClassPath = new StringTokenizer(classPath, File.pathSeparator);
@@ -307,37 +241,40 @@ public final class ClassLoaderBuilder {
                         standardLibs.add(nextPath.substring(nextPath.lastIndexOf(File.separatorChar) + 1));
                     }
                     try {
-                        urlList.add(new File(nextPath).toURI().toURL());
+                        urlList.add(Paths.get(nextPath).toUri().toURL());
                     } catch (MalformedURLException e) {
                         System.err.printf("Exception %s\n", e);
                     }
                 }
             }
             if (mode == USE_WAR_LIB) {
-                if (path.isDirectory()) {
-                    File libDir = new File(path, "WEB-INF/lib");
-                    // this should not be null but it can happen
-                    if (libDir != null && libDir.canRead()) {
-                        File[] libs = libDir.listFiles(jarFileFilter);
-                        // System.out.printf("Webapp lib count: %s\n",
-                        // libs.length);
-                        for (File lib : libs) {
-                            try {
-                                urlList.add(lib.toURI().toURL());
-                            } catch (MalformedURLException e) {
-                                System.err.printf("Exception %s\n", e);
+                if (path.toFile().isDirectory()) {
+                    Path libDir = path.resolve("WEB-INF").resolve("lib");
+                    try {
+                        Files.walkFileTree(libDir, new SimpleFileVisitor<Path>() {
+                            @Override
+                            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                                if (file.toFile().getName().endsWith(".jar")) {
+                                    try {
+                                        urlList.add(file.toUri().toURL());
+                                    } catch (MalformedURLException e) {
+                                        System.err.printf("Exception %s\n", e);
+                                    }
+                                }
+                                return FileVisitResult.CONTINUE;
                             }
-                        }
+                        });
+                    } catch (IOException e) {
+                        System.err.printf("Exception %s\n", e);
                     }
                 } else {
-                    try {
-                        JarInputStream jarStream = new JarInputStream(new FileInputStream(path));
+                    try (InputStream is = Files.newInputStream(path); JarInputStream jarStream = new JarInputStream(is)) {
                         JarEntry entry = jarStream.getNextJarEntry();
                         while (entry != null) {
                             String entryName = entry.getName();
                             if (entryName.startsWith("WEB-INF/lib/") && entryName.endsWith(".jar") && !standardLibs.contains(entryName.substring(12))) {
-                                File tempJarFile = unpack(jarStream, entryName);
-                                urlList.add(tempJarFile.toURI().toURL());
+                                Path tempJarFile = unpack(jarStream, entryName);
+                                urlList.add(tempJarFile.toUri().toURL());
                             }
                             entry = jarStream.getNextJarEntry();
                         }
@@ -363,27 +300,24 @@ public final class ClassLoaderBuilder {
      * Unpack the specified entry from the JAR file.
      * 
      * @param jarStream
-     *            The input stream of the JAR file positioned at the entry.
+     *            The input stream of the JAR file positioned at the entry
      * @param entryName
-     *            The name of the entry to extract.
-     * 
-     * @return The extracted file. The created file is a temporary file in the temporary directory.
-     * 
+     *            The name of the entry to extract
+     * @return The extracted file. The created file is a temporary file in the temporary directory
      * @throws IOException
-     *             if the JAR file cannot be read or is incorrect.
+     *             if the JAR file cannot be read or is incorrect
      */
-    private static File unpack(JarInputStream jarStream, String entryName) throws IOException {
+    private static Path unpack(JarInputStream jarStream, String entryName) throws IOException {
         String libName = entryName.substring(entryName.lastIndexOf('/') + 1, entryName.length() - 4);
-        File tempJarFile = File.createTempFile("tmp_" + libName, ".jar");
-        tempJarFile.deleteOnExit();
-        FileOutputStream out = new FileOutputStream(tempJarFile);
-        // Transfer bytes from the JAR file to the output file
-        byte[] buf = new byte[8192];
-        int len;
-        while ((len = jarStream.read(buf)) > 0) {
-            out.write(buf, 0, len);
+        Path tempJarFile = Files.createTempFile("tmp_" + libName, ".jar");
+        try (OutputStream os = Files.newOutputStream(tempJarFile)) {
+            // Transfer bytes from the JAR file to the output file
+            byte[] buf = new byte[1024];
+            int len;
+            while ((len = jarStream.read(buf)) > 0) {
+                os.write(buf, 0, len);
+            }
         }
-        out.close();
         return tempJarFile;
     }
 
@@ -392,7 +326,7 @@ public final class ClassLoaderBuilder {
      * 
      * @param list
      */
-    private final static void scrubURLList(List<URL> list) {
+    private final static void scrubURLList(Collection<URL> list) {
         String ALPHABET = "abcdefghijklmnopqrstuvwxyz";
         Pattern punct = Pattern.compile("\\p{Punct}");
         Set<URL> removalList = new HashSet<URL>(list.size());
@@ -617,6 +551,7 @@ public final class ClassLoaderBuilder {
      */
     private static String parseUrl(URL url) {
         String external = url.toExternalForm().toLowerCase();
+        System.out.printf("parseUrl %s%n", external);
         // get everything after the last slash
         String[] parts = external.split("/");
         // last part

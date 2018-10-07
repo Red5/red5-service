@@ -22,6 +22,8 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.red5.classloading.ClassLoaderBuilder;
 
@@ -44,8 +46,7 @@ public class Bootstrap {
      */
     public static void main(String[] args) throws Exception {
         try {
-            String root = getRed5Root();
-            getConfigurationRoot(root);
+            getConfigurationRoot(getRed5Root());
             // bootstrap dependencies and start red5
             bootStrap();
             System.out.println("Bootstrap complete");
@@ -130,21 +131,20 @@ public class Bootstrap {
      * @param root
      * @return
      */
-    static String getConfigurationRoot(String root) {
+    static Path getConfigurationRoot(Path root) {
+        Path confDir = null;
         // look for config dir
         String conf = System.getProperty("red5.config_root");
         // if root is not null and conf is null then default it
-        if (root != null && conf == null) {
-            conf = root + "/conf";
-        }
-        // flip slashes only if windows based os
-        if (File.separatorChar != '/') {
-            conf = conf.replaceAll("\\\\", "/");
+        if (conf != null) {
+            confDir = Paths.get(conf);
+        } else {
+            confDir = root.resolve("conf");
         }
         // set conf sysprop
-        System.setProperty("red5.config_root", conf);
-        System.out.printf("Configuation root: %s%n", conf);
-        return conf;
+        System.setProperty("red5.config_root", confDir.toAbsolutePath().toString());
+        System.out.printf("Configuation root: %s%n", System.getProperty("red5.config_root"));
+        return confDir;
     }
 
     /**
@@ -153,31 +153,18 @@ public class Bootstrap {
      * @return
      * @throws IOException
      */
-    static String getRed5Root() throws IOException {
+    static Path getRed5Root() throws IOException {
         // look for red5 root first as a system property
-        String root = System.getProperty("red5.root");
+        String root = System.getProperty("red5.root", System.getenv("RED5_HOME"));
         // if root is null check environmental
         if (root == null) {
-            // check for env variable
-            root = System.getenv("RED5_HOME");
-        }
-        // if root is null find out current directory and use it as root
-        if (root == null || ".".equals(root)) {
             root = System.getProperty("user.dir");
-            // System.out.printf("Current directory: %s%n", root);
         }
-        // if were on a windows based os flip the slashes
-        if (File.separatorChar != '/') {
-            root = root.replaceAll("\\\\", "/");
-        }
-        // drop last slash if exists
-        if (root.charAt(root.length() - 1) == '/') {
-            root = root.substring(0, root.length() - 1);
-        }
+        Path rootDir = Paths.get(root);
         // set/reset property
-        System.setProperty("red5.root", root);
-        System.out.printf("Red5 root: %s%n", root);
-        return root;
+        System.setProperty("red5.root", rootDir.toAbsolutePath().toString());
+        System.out.printf("Red5 root: %s%n", System.getProperty("red5.root"));
+        return rootDir;
     }
 
 }

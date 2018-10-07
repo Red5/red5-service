@@ -28,11 +28,11 @@ import java.net.URLClassLoader;
  */
 public final class ChildFirstClassLoader extends URLClassLoader {
 
-    private ClassLoader parent = null;
+    private ClassLoader parent;
 
-    private ClassLoader parentParent = null;
+    private ClassLoader parentParent;
 
-    private ClassLoader system = null;
+    private ClassLoader system;
 
     public ChildFirstClassLoader(URL[] urls) {
         super(urls);
@@ -40,7 +40,6 @@ public final class ChildFirstClassLoader extends URLClassLoader {
         system = getSystemClassLoader();
         // if we have a parent of the parent and its not the system classloader
         parentParent = this.parent.getParent() != system ? this.parent.getParent() : null;
-
         dumpClassLoaderNames();
     }
 
@@ -70,28 +69,10 @@ public final class ChildFirstClassLoader extends URLClassLoader {
      * <p>
      * The implementation is surprisingly straightforward.
      * 
-     * @param name
-     *            the name of the class to load, should not be
-     * 
-     *            <pre>
-     * null
-     * </pre>
-     * 
-     *            .
-     * 
-     * @param resolve
-     *            flag that indicates whether the class should be resolved.
-     * 
-     * @return the loaded class, never
-     * 
-     *         <pre>
-     * null
-     * </pre>
-     * 
-     *         .
-     * 
-     * @throws ClassNotFoundException
-     *             if the class could not be loaded.
+     * @param name the name of the class to load, should not be null
+     * @param resolve flag that indicates whether the class should be resolved
+     * @return the loaded class, never null
+     * @throws ClassNotFoundException if the class could not be loaded
      */
     @Override
     protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
@@ -150,22 +131,8 @@ public final class ChildFirstClassLoader extends URLClassLoader {
     /**
      * Override the parent-first resource loading model established by java.lang.Classloader with child-first behavior.
      * 
-     * @param name
-     *            the name of the resource to load, should not be
-     * 
-     *            <pre>
-     * null
-     * </pre>
-     * 
-     *            .
-     * 
-     * @return a {@link URL} for the resource, or
-     * 
-     *         <pre>
-     * null
-     * </pre>
-     * 
-     *         if it could not be found.
+     * @param name the name of the resource to load, should not be null
+     * @return a {@link URL} for the resource, or null if it could not be found
      */
     @Override
     public URL getResource(String name) {
