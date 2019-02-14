@@ -3,7 +3,7 @@
     <parent>
         <groupId>org.red5</groupId>
         <artifactId>red5-parent</artifactId>
-        <version>1.0.10</version>
+        <version>1.0.11</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>red5-service</artifactId>
@@ -57,21 +57,10 @@
         </developer>
     </developers>
     <properties>
-        <commons-daemon.version>1.0.15</commons-daemon.version>
+        <commons-daemon.version>1.1.0</commons-daemon.version>
     </properties>
     <build>
         <defaultGoal>install</defaultGoal>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-            </resource>
-            <resource>
-                <directory>src/main/java</directory>
-                <includes>
-                    <include>**/*.xml</include>
-                </includes>
-            </resource>
-        </resources>
         <plugins>
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
