@@ -118,7 +118,7 @@ public class Bootstrap {
         // set new loader as the loader for this thread
         Thread.currentThread().setContextClassLoader(loader);
         // create a new instance of this class using new classloader
-        Object boot = Class.forName("org.red5.server.Launcher", true, loader).newInstance();
+        Object boot = Class.forName("org.red5.server.Launcher", true, loader).getDeclaredConstructor().newInstance();
         Method m1 = boot.getClass().getMethod("launch", (Class[]) null);
         m1.invoke(boot, (Object[]) null);
         // not that it matters, but set it back to the original loader
