@@ -1,19 +1,8 @@
 /*
- * RED5 Open Source Media Server - https://github.com/Red5/
- * 
- * Copyright 2006-2016 by respective authors (see below). All rights reserved.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * RED5 Open Source Media Server - https://github.com/Red5/ Copyright 2006-2016 by respective authors (see below). All rights reserved. Licensed under the Apache License, Version
+ * 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless
+ * required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific language governing permissions and limitations under the License.
  */
 
 package org.red5.server;
@@ -75,8 +64,8 @@ public class Bootstrap {
         System.setProperty("sun.lang.ClassLoader.allowArraySyntax", "true");
         // check system property before forcing out selector
         //if (System.getProperty("logback.ContextSelector") == null) {
-            // set to use our logger
-            //System.setProperty("logback.ContextSelector", "org.red5.logging.LoggingContextSelector");
+        // set to use our logger
+        //System.setProperty("logback.ContextSelector", "org.red5.logging.LoggingContextSelector");
         //}
         String policyFile = System.getProperty("java.security.policy");
         if (policyFile == null) {
@@ -106,9 +95,7 @@ public class Bootstrap {
             System.out.printf("Setting temp directory to %s%n", System.getProperty("java.io.tmpdir"));
         }
         /*
-         * try { // Enable the security manager SecurityManager sm = new
-         * SecurityManager(); System.setSecurityManager(sm); } catch
-         * (SecurityException se) {
+         * try { // Enable the security manager SecurityManager sm = new SecurityManager(); System.setSecurityManager(sm); } catch (SecurityException se) {
          * System.err.println("Security manager already set"); }
          */
         // get current loader
