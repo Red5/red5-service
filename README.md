@@ -42,6 +42,46 @@ systemctl enable red5.service
  * Debian `service red5 stop`
  * CentOs `systemctl stop red5.service`
  
+#### CentOS
+Init script specific to CentOS
+```sh
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:             red5
+# Required-Start:       $remote_fs $syslog
+# Required-Stop:        $remote_fs $syslog
+# Default-Start:        2 3 4 5
+# Default-Stop:         0 1 6
+# Short-Description:    Red5 server
+### END INIT INFO
+
+start() {
+  cd /opt/red5-server && nohup ./red5.sh > /dev/null 2>&1 &
+  echo 'Service started' >&2
+}
+
+stop() {
+ cd /opt/red5-server && ./red5-shutdown.sh > /dev/null 2>&1 &
+ echo 'Service stopped' >&2
+}
+
+case "$1" in
+start)
+    start
+    ;;
+stop)
+    stop
+;;
+restart)
+    stop
+    start
+    ;;
+ *)
+    echo "Usage: $0 {start|stop|restart}"
+ esac
+```
+ 
 ### Windows
 Windows daemon uses __procrun__ (whose executable is named prunsrv.exe).
 
