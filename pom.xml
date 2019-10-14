@@ -57,7 +57,7 @@
         </developer>
     </developers>
     <properties>
-        <commons-daemon.version>1.2.3</commons-daemon.version>
+        <commons-daemon.version>1.2.2</commons-daemon.version>
     </properties>
     <build>
         <defaultGoal>install</defaultGoal>
