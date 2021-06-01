@@ -36,6 +36,7 @@ public class Shutdown {
     public static void main(String[] args) {
         String host = System.getProperty("red5.shutdown.host", "127.0.0.1");
         try (Socket clientSocket = new Socket(host, Integer.valueOf(args[0])); PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true); BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));) {
+            System.out.printf("Connected - local: %s remote: %s%n", clientSocket.getLocalSocketAddress().toString(), clientSocket.getRemoteSocketAddress().toString());
             // send the token
             String token = "cafebeef";
             if (args.length > 1) {
