@@ -197,11 +197,11 @@ public final class ClassLoaderBuilder {
             }
             // create the url array that the classloader wants
             urls = urlList.toArray(new URL[0]);
-            System.out.printf("Selected libraries: (%s items)\n", urls.length);
-            for (URL url : urls) {
-                System.out.println(url);
-            }
-            System.out.println();
+            //System.out.printf("Selected libraries: (%s items)\n", urls.length);
+            //for (URL url : urls) {
+            //    System.out.println(url);
+            //}
+            //System.out.println();
             // instance a url classloader using the selected jars
             if (parent == null) {
                 loader = new URLClassLoader(urls);
@@ -538,7 +538,7 @@ public final class ClassLoaderBuilder {
      */
     private static String parseUrl(URL url) {
         String external = url.toExternalForm().toLowerCase();
-        System.out.printf("parseUrl %s%n", external);
+        //System.out.printf("parseUrl %s%n", external);
         // get everything after the last slash
         String[] parts = external.split("/");
         // last part
